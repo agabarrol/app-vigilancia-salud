@@ -1,58 +1,62 @@
 import streamlit as st
 
-# Base de datos de los protocolos extraídos de la documentación oficial
-PROTOCOLOS_VIGILANCIA = {
-    "Polvo de Sílice (Silicosis)": {
-        "descripcion": "Vigilancia específica para neumoconiosis por inhalación de sílice cristalina[cite: 151].",
-        "pruebas_especificas": [
-            "Historia laboral exhaustiva y cuestionario respiratorio estandarizado[cite: 161, 162].",
-            "Exploración física con auscultación cardiopulmonar[cite: 162].",
-            "Radiografía de tórax (proyecciones P-A y lateral) con lectura estandarizada según normativa ILO 2011[cite: 162, 185].",
-            "Espirometría realizada e interpretada según las recomendaciones de la SEPAR[cite: 162].",
-            "Electrocardiograma (obligatorio para trabajadores bajo la ORDEN ITC/2585/2007)[cite: 163]."
-        ]
+# 1. Base de datos estructurada con los factores de riesgo extraídos
+protocolos = [
+    {
+        "factor_riesgo": "Vibraciones Mano-Brazo",
+        "descripcion": "Exposición a vibraciones mecánicas transmitidas al sistema mano-brazo (herramientas manuales, maquinaria percutora). Riesgo de alteraciones vasculares, neurológicas o musculoesqueléticas.",
+        "criterios_evaluacion": "Valor límite de exposición diaria normalizado a 8 horas: 5 m/s². Valor de acción: 2,5 m/s².",
+        "pruebas_clinicas": "Cuestionario de síntomas, exploración física (vascular, neurológica y musculoesquelética), test de compresión capilar, test de Allen, pruebas de sensibilidad.",
+        "periodicidad": "Examen inicial (previo a la exposición), periódico (cada 1-3 años dependiendo del nivel de riesgo, edad y síntomas) y tras ausencias prolongadas."
     },
-    "Ruido y Químicos Ototóxicos": {
-        "descripcion": "Detección de hipoacusia inducida por ruido. Requiere vigilancia estrecha si existe exposición conjunta a químicos como tolueno, estireno o monóxido de carbono[cite: 246, 249].",
-        "pruebas_especificas": [
-            "Audiometría tonal (prueba diagnóstica de referencia o gold standard)[cite: 243].",
-            "Productos de distorsión/otoemisiones acústicas (DPOAE) como prueba de detección precoz y seguimiento complementario[cite: 243]."
-        ]
+    {
+        "factor_riesgo": "Vibraciones Cuerpo Entero",
+        "descripcion": "Exposición a vibraciones transmitidas a todo el cuerpo (conducción de vehículos industriales, tractores, carretillas). Riesgo principal: lumbalgias y lesiones de la columna vertebral.",
+        "criterios_evaluacion": "Valor límite de exposición diaria normalizado a 8 horas: 1,15 m/s². Valor de acción: 0,5 m/s².",
+        "pruebas_clinicas": "Anamnesis dirigida (antecedentes de dolor lumbar), exploración del aparato locomotor, maniobras de Lasègue y Bragard.",
+        "periodicidad": "Inicial, periódica (según evaluación de riesgos y aparición de sintomatología) y por cambio de puesto."
     },
-    "Vibraciones (Mano-Brazo y Cuerpo Entero)": {
-        "descripcion": "Prevención del síndrome por vibraciones mano-brazo, túnel carpiano y problemas osteomusculares (como dolor lumbar)[cite: 86, 88].",
-        "pruebas_especificas": [
-            "Cuestionarios de síntomas: HAVS, Cuestionario Nórdico Estandarizado y Escala de Boston para túnel carpiano[cite: 96, 120, 122].",
-            "Diagrama de Katz para localizar cambios vasculares y de sensibilidad[cite: 96].",
-            "Test de provocación por frío para evaluar la afectación vascular (ISO 14835-1 e ISO 14835-2)[cite: 97].",
-            "Evaluación de percepción sensorial mediante monofilamentos de Semmes-Weinstein[cite: 98].",
-            "Evaluación de la destreza de manipulación con la prueba del tablero perforado de Purdue (Purdue Pegboard Test)[cite: 98].",
-            "Pruebas de provocación física: test de Phalen, signo de Tinel, test de compresión del carpo[cite: 98]."
-        ]
+    {
+        "factor_riesgo": "Ruido",
+        "descripcion": "Exposición a niveles de ruido elevados que pueden provocar hipoacusia o sordera profesional, además de efectos extrauditivos (estrés, fatiga).",
+        "criterios_evaluacion": "Valores inferiores que dan lugar a una acción: LAeq,d = 80 dB(A). Valores superiores: 85 dB(A). Valor límite: 87 dB(A).",
+        "pruebas_clinicas": "Anamnesis auditiva, otoscopia, audiometría tonal liminar (vía aérea y, si hay alteraciones, vía ósea).",
+        "periodicidad": "Inicial, periódica (cada 3-5 años para exposición >80 dB, y cada 1-2 años para >85 dB o uso de EPIs)."
+    },
+    {
+        "factor_riesgo": "Polvo de Sílice (Silicosis)",
+        "descripcion": "Enfermedad fibrósica pulmonar irreversible ocasionada por la inhalación continuada de polvo de sílice libre cristalina.",
+        "criterios_evaluacion": "Medición de concentración de fracción respirable de sílice libre. Requiere control ambiental estricto.",
+        "pruebas_clinicas": "Historia clínica ocupacional exhaustiva, radiografía de tórax (clasificación OIT), espirometría, prueba tuberculínica.",
+        "periodicidad": "Inicial, periódica (frecuencia anual o cada 1-3 años según el nivel de exposición y antigüedad), y vigilancia post-ocupacional."
     }
-}
+]
 
-def main():
-    st.set_page_config(page_title="Vigilancia de la Salud - Cuadro Profesional", layout="wide")
-    st.title("Gestión de Pruebas Médicas: Enfermedades Profesionales")
-    
-    st.write("Seleccione el riesgo laboral para consultar las pruebas clínicas específicas exigidas por los protocolos vigentes:")
+# 2. Configuración de la interfaz en Streamlit
+st.title("Buscador de Protocolos de Vigilancia de la Salud")
+st.markdown("Busca por factor de riesgo, tipo de prueba médica o palabra clave.")
 
-    # Selector de riesgo
-    riesgo_seleccionado = st.selectbox("Factor de Riesgo / Protocolo", list(PROTOCOLOS_VIGILANCIA.keys()))
+# 3. Barra de búsqueda
+termino_busqueda = st.text_input("🔍 Buscar:", "").lower()
 
-    if riesgo_seleccionado:
-        datos = PROTOCOLOS_VIGILANCIA[riesgo_seleccionado]
-        
-        st.subheader("Descripción del Riesgo")
-        st.info(datos["descripcion"])
-        
-        st.subheader("Pruebas Específicas Requeridas")
-        for prueba in datos["pruebas_especificas"]:
-            st.markdown(f"- {prueba}")
-            
-    st.markdown("---")
-    st.caption("Los datos han sido extraídos de las guías de vigilancia sanitaria específica publicadas por el Ministerio de Sanidad.")
+# 4. Motor de filtrado dinámico
+resultados = []
+if termino_busqueda:
+    for protocolo in protocolos:
+        # Verifica si el término está en cualquier campo del diccionario del protocolo
+        if any(termino_busqueda in str(valor).lower() for valor in protocolo.values()):
+            resultados.append(protocolo)
+else:
+    # Si no hay texto, muestra todos por defecto
+    resultados = protocolos 
 
-if __name__ == "__main__":
-    main()
+st.write(f"**Resultados encontrados:** {len(resultados)}")
+st.divider()
+
+# 5. Renderizado de los resultados
+for res in resultados:
+    with st.expander(f"⚠️ {res['factor_riesgo']}", expanded=True):
+        st.markdown(f"**Descripción:** {res['descripcion']}")
+        st.markdown(f"**Criterios de Evaluación:** {res['criterios_evaluacion']}")
+        st.markdown(f"**Pruebas Clínicas Requeridas:** {res['pruebas_clinicas']}")
+        st.markdown(f"**Periodicidad:** {res['periodicidad']}")
