@@ -1,7 +1,6 @@
 import streamlit as st
 
-# Aquí puedes ir añadiendo los 28 factores de riesgo según vayas revisando los PDFs.
-# Al estar estructurado en este diccionario, el desplegable se actualizará automáticamente.
+# 1. Base de datos con las pruebas específicas extraídas de los documentos
 pruebas_por_riesgo = {
     "Vibraciones Mano-Brazo": [
         "Cuestionario de síntomas específico",
@@ -24,53 +23,42 @@ pruebas_por_riesgo = {
         "Radiografía de tórax (lectura según clasificación OIT)",
         "Espirometría (estudio de la función pulmonar)",
         "Prueba tuberculínica (Mantoux)"
-    ],
-    # --- PLANTILLA PARA AÑADIR LOS SIGUIENTES ---
-    # "Nombre del Riesgo 5": [
-    #     "Prueba 1",
-    #     "Prueba 2"
-    # ],
-    # "Nombre del Riesgo 6": [
-    #     "Prueba 1",
-    #     "Prueba 2"
-    # ]
+    ]
 }
 
-st.title("Gestión de Protocolos Médicos y Costes")
+st.title("Gestión de Pruebas Médicas y Costes")
 
+# 2. Desplegable para elegir el factor de riesgo
 factor_seleccionado = st.selectbox(
     "Selecciona el factor de riesgo al que está expuesto el trabajador:",
     options=[""] + list(pruebas_por_riesgo.keys()),
     format_func=lambda x: "Elige una opción..." if x == "" else x
 )
 
+# 3. Mostrar pruebas y gestionar costes si hay una selección activa
 if factor_seleccionado:
     st.subheader(f"Pruebas específicas para: {factor_seleccionado}")
     
+    # Listar las pruebas
     for prueba in pruebas_por_riesgo[factor_seleccionado]:
         st.markdown(f"- {prueba}")
         
     st.divider()
     
+    # 4. Módulo de costes
     st.subheader("Evaluación de Costes")
+    coste_pruebas = st.number_input(
+        f"Introduce el coste total estimado de estas pruebas para {factor_seleccionado} (€):", 
+        min_value=0.0, 
+        step=5.0, 
+        format="%.2f"
+    )
     
-    # Uso de columnas para que el formulario quede más compacto
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        coste_pruebas = st.number_input(
-            "Coste de las pruebas por trabajador (€):", 
-            min_value=0.0, 
-            step=5.0, 
-            format="%.2f"
-        )
-        
-    with col2:
-        num_trabajadores = st.number_input(
-            "Número de trabajadores expuestos:", 
-            min_value=1, 
-            step=1
-        )
+    num_trabajadores = st.number_input(
+        "Número de trabajadores expuestos:", 
+        min_value=1, 
+        step=1
+    )
     
     if coste_pruebas > 0:
         coste_total = coste_pruebas * num_trabajadores
