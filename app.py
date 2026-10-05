@@ -1,62 +1,65 @@
 import streamlit as st
 
-# 1. Base de datos estructurada con los factores de riesgo extraídos
-protocolos = [
-    {
-        "factor_riesgo": "Vibraciones Mano-Brazo",
-        "descripcion": "Exposición a vibraciones mecánicas transmitidas al sistema mano-brazo (herramientas manuales, maquinaria percutora). Riesgo de alteraciones vasculares, neurológicas o musculoesqueléticas.",
-        "criterios_evaluacion": "Valor límite de exposición diaria normalizado a 8 horas: 5 m/s². Valor de acción: 2,5 m/s².",
-        "pruebas_clinicas": "Cuestionario de síntomas, exploración física (vascular, neurológica y musculoesquelética), test de compresión capilar, test de Allen, pruebas de sensibilidad.",
-        "periodicidad": "Examen inicial (previo a la exposición), periódico (cada 1-3 años dependiendo del nivel de riesgo, edad y síntomas) y tras ausencias prolongadas."
-    },
-    {
-        "factor_riesgo": "Vibraciones Cuerpo Entero",
-        "descripcion": "Exposición a vibraciones transmitidas a todo el cuerpo (conducción de vehículos industriales, tractores, carretillas). Riesgo principal: lumbalgias y lesiones de la columna vertebral.",
-        "criterios_evaluacion": "Valor límite de exposición diaria normalizado a 8 horas: 1,15 m/s². Valor de acción: 0,5 m/s².",
-        "pruebas_clinicas": "Anamnesis dirigida (antecedentes de dolor lumbar), exploración del aparato locomotor, maniobras de Lasègue y Bragard.",
-        "periodicidad": "Inicial, periódica (según evaluación de riesgos y aparición de sintomatología) y por cambio de puesto."
-    },
-    {
-        "factor_riesgo": "Ruido",
-        "descripcion": "Exposición a niveles de ruido elevados que pueden provocar hipoacusia o sordera profesional, además de efectos extrauditivos (estrés, fatiga).",
-        "criterios_evaluacion": "Valores inferiores que dan lugar a una acción: LAeq,d = 80 dB(A). Valores superiores: 85 dB(A). Valor límite: 87 dB(A).",
-        "pruebas_clinicas": "Anamnesis auditiva, otoscopia, audiometría tonal liminar (vía aérea y, si hay alteraciones, vía ósea).",
-        "periodicidad": "Inicial, periódica (cada 3-5 años para exposición >80 dB, y cada 1-2 años para >85 dB o uso de EPIs)."
-    },
-    {
-        "factor_riesgo": "Polvo de Sílice (Silicosis)",
-        "descripcion": "Enfermedad fibrósica pulmonar irreversible ocasionada por la inhalación continuada de polvo de sílice libre cristalina.",
-        "criterios_evaluacion": "Medición de concentración de fracción respirable de sílice libre. Requiere control ambiental estricto.",
-        "pruebas_clinicas": "Historia clínica ocupacional exhaustiva, radiografía de tórax (clasificación OIT), espirometría, prueba tuberculínica.",
-        "periodicidad": "Inicial, periódica (frecuencia anual o cada 1-3 años según el nivel de exposición y antigüedad), y vigilancia post-ocupacional."
-    }
-]
+# 1. Base de datos con las pruebas específicas extraídas de los documentos
+pruebas_por_riesgo = {
+    "Vibraciones Mano-Brazo": [
+        "Cuestionario de síntomas específico",
+        "Exploración física: vascular, neurológica y musculoesquelética",
+        "Test de compresión capilar y Test de Allen",
+        "Pruebas de sensibilidad térmica y táctil"
+    ],
+    "Vibraciones Cuerpo Entero": [
+        "Anamnesis dirigida (antecedentes de dolor lumbar y patologías de columna)",
+        "Exploración detallada del aparato locomotor",
+        "Maniobras exploratorias radiculares (Lasègue y Bragard)"
+    ],
+    "Ruido": [
+        "Anamnesis auditiva (antecedentes de otitis, uso de fármacos ototóxicos)",
+        "Otoscopia bilateral",
+        "Audiometría tonal liminar (vía aérea y, si hay alteraciones, vía ósea)"
+    ],
+    "Polvo de Sílice (Silicosis)": [
+        "Historia clínica y ocupacional exhaustiva",
+        "Radiografía de tórax (lectura según clasificación OIT)",
+        "Espirometría (estudio de la función pulmonar)",
+        "Prueba tuberculínica (Mantoux)"
+    ]
+}
 
-# 2. Configuración de la interfaz en Streamlit
-st.title("Buscador de Protocolos de Vigilancia de la Salud")
-st.markdown("Busca por factor de riesgo, tipo de prueba médica o palabra clave.")
+st.title("Gestión de Pruebas Médicas y Costes")
 
-# 3. Barra de búsqueda
-termino_busqueda = st.text_input("🔍 Buscar:", "").lower()
+# 2. Desplegable para elegir el factor de riesgo
+factor_seleccionado = st.selectbox(
+    "Selecciona el factor de riesgo al que está expuesto el trabajador:",
+    options=[""] + list(pruebas_por_riesgo.keys()),
+    format_func=lambda x: "Elige una opción..." if x == "" else x
+)
 
-# 4. Motor de filtrado dinámico
-resultados = []
-if termino_busqueda:
-    for protocolo in protocolos:
-        # Verifica si el término está en cualquier campo del diccionario del protocolo
-        if any(termino_busqueda in str(valor).lower() for valor in protocolo.values()):
-            resultados.append(protocolo)
-else:
-    # Si no hay texto, muestra todos por defecto
-    resultados = protocolos 
-
-st.write(f"**Resultados encontrados:** {len(resultados)}")
-st.divider()
-
-# 5. Renderizado de los resultados
-for res in resultados:
-    with st.expander(f"⚠️ {res['factor_riesgo']}", expanded=True):
-        st.markdown(f"**Descripción:** {res['descripcion']}")
-        st.markdown(f"**Criterios de Evaluación:** {res['criterios_evaluacion']}")
-        st.markdown(f"**Pruebas Clínicas Requeridas:** {res['pruebas_clinicas']}")
-        st.markdown(f"**Periodicidad:** {res['periodicidad']}")
+# 3. Mostrar pruebas y gestionar costes si hay una selección activa
+if factor_seleccionado:
+    st.subheader(f"Pruebas específicas para: {factor_seleccionado}")
+    
+    # Listar las pruebas
+    for prueba in pruebas_por_riesgo[factor_seleccionado]:
+        st.markdown(f"- {prueba}")
+        
+    st.divider()
+    
+    # 4. Módulo de costes
+    st.subheader("Evaluación de Costes")
+    coste_pruebas = st.number_input(
+        f"Introduce el coste total estimado de estas pruebas para {factor_seleccionado} (€):", 
+        min_value=0.0, 
+        step=5.0, 
+        format="%.2f"
+    )
+    
+    num_trabajadores = st.number_input(
+        "Número de trabajadores expuestos:", 
+        min_value=1, 
+        step=1
+    )
+    
+    if coste_pruebas > 0:
+        coste_total = coste_pruebas * num_trabajadores
+        st.success(f"**Coste total estimado:** {coste_total:.2f} €")
